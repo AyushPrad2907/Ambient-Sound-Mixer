@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ambient Sound Mixer</title>
+  <style>
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+    body {
+      margin: 0;
+      padding: 2rem;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('background.png') center/cover no-repeat;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #66a6ff;
+    }
+
+    .glass-panel {
+      position: relative;
+      width: 90%;
+      max-width: 900px;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+      color: #f0f8ff;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #fff;
+      text-shadow: 
+        0 0 5px #fff, 
+        0 0 10px #fff, 
+        0 0 20px #ff0080, 
+        0 0 30px #ff0080, 
+        0 0 40px #ff0080, 
+        0 0 50px #ff0080, 
+        0 0 75px #ff0080;
+      animation: neonGlow 1.5s infinite alternate;
+    }
+
+    @keyframes neonGlow {
+      from {
+        text-shadow: 
+          0 0 5px #fff, 
+          0 0 10px #fff, 
+          0 0 20px #ff0080, 
+          0 0 30px #ff0080, 
+          0 0 40px #ff0080, 
+          0 0 50px #ff0080, 
+          0 0 75px #ff0080;
+      }
+      to {
+        text-shadow: 
+          0 0 5px #fff, 
+          0 0 15px #fff, 
+          0 0 25px #ff00ff, 
+          0 0 35px #ff00ff, 
+          0 0 45px #ff00ff, 
+          0 0 55px #ff00ff, 
+          0 0 85px #ff00ff;
+      }
+    }
+
+    .drip-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .drip {
+      position: absolute;
+      top: -30px;
+      width: 4px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 2px;
+      filter: blur(1px);
+      animation: drip 4s linear infinite;
+    }
+
+    @keyframes drip {
+      to {
+        transform: translateY(calc(100vh + 30px));
+        opacity: 0;
+      }
+    }
+
+    .mixer {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .track {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .track h2 {
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .slider {
+      width: 100%;
+      margin: 0.5rem 0;
+      accent-color: rgba(255, 255, 255, 0.8);
+    }
+
+    .controls {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    button {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.35);
+      color: #1e1e2f;
+      font-weight: bold;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: background 0.3s, transform 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    footer {
+      position: absolute;
+      bottom: 10px;
+      right: 20px;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+    }
+
+    .visualizer {
+      position: absolute;
+      bottom: 10px;
+      left: 20px;
+      display: flex;
+      gap: 4px;
+      align-items: end;
+    }
+
+    .bar {
+      width: 5px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.8);
+      animation: bounce 0.5s ease-in-out infinite alternate;
+    }
+
+    .bar:nth-child(2) { animation-delay: 0.1s; }
+    .bar:nth-child(3) { animation-delay: 0.2s; }
+    .bar:nth-child(4) { animation-delay: 0.3s; }
+    .bar:nth-child(5) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      from { height: 20px; }
+      to { height: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glass-panel">
+    <h1>☁️ Ambient Sound Mixer</h1>
+    <div class="drip-container" id="drip-container"></div>
+    <div class="mixer" id="mixer"></div>
+    <div class="controls">
+      <button id="playAll"><i class="fas fa-play"></i> Play All</button>
+      <button id="pauseAll"><i class="fas fa-pause"></i> Pause All</button>
+      <button id="changeTheme"><i class="fas fa-palette"></i> Change Theme</button>
+    </div>
+  </div>
+
+  <div class="visualizer">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </div>
+
+  <footer>
+    &copy; 2025 Ayush | All Rights Reserved
+  </footer>
+
+  <script>
+    const dripContainer = document.getElementById('drip-container');
+    function createDrip() {
+      const drip = document.createElement('div');
+      drip.className = 'drip';
+      drip.style.left = `${Math.random() * 100}%`;
+      drip.style.animationDuration = `${3 + Math.random() * 2}s`;
+      dripContainer.appendChild(drip);
+      setTimeout(() => drip.remove(), 5000);
+    }
+    setInterval(createDrip, 250);
+
+    const soundFiles = [
+      { name: 'Rain', url: 'sounds/rain.mp3' },
+      { name: 'Wind', url: 'sounds/wind.mp3' },
+      { name: 'Cafe', url: 'sounds/cafe.mp3' },
+      { name: 'Thunder', url: 'sounds/thunder.mp3' }
+    ];
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const tracks = [];
+    const mixerEl = document.getElementById('mixer');
+
+    document.body.addEventListener('click', () => {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }, { once: true });
+
+    soundFiles.forEach((file, idx) => {
+      const trackEl = document.createElement('div');
+      trackEl.className = 'track';
+      trackEl.innerHTML = `
+        <h2>${file.name}</h2>
+        <input type="range" min="0" max="1" step="0.01" value="0.5" class="slider" id="slider${idx}">
+        <button id="toggle${idx}"><i class="fas fa-play"></i></button>
+      `;
+      mixerEl.appendChild(trackEl);
+
+      fetch(file.url)
+        .then(res => res.arrayBuffer())
+        .then(data => audioCtx.decodeAudioData(data))
+        .then(buffer => {
+          const gainNode = audioCtx.createGain();
+          gainNode.gain.value = 0.5;
+          gainNode.connect(audioCtx.destination);
+          tracks[idx] = { buffer, gainNode, playing: false };
+
+          document.getElementById(`slider${idx}`).addEventListener('input', e => {
+            tracks[idx].gainNode.gain.value = e.target.value;
+          });
+
+          document.getElementById(`toggle${idx}`).addEventListener('click', () => {
+            const t = tracks[idx];
+            if (!t.playing) {
+              const source = audioCtx.createBufferSource();
+              source.buffer = t.buffer;
+              source.loop = true;
+              source.connect(t.gainNode);
+              source.start();
+              t.source = source;
+              t.playing = true;
+              document.getElementById(`toggle${idx}`).innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+              t.source.stop();
+              t.playing = false;
+              document.getElementById(`toggle${idx}`).innerHTML = '<i class="fas fa-play"></i>';
+            }
+          });
+        });
+    });
+
+    document.getElementById('playAll').addEventListener('click', () => {
+      tracks.forEach((t, i) => !t.playing && document.getElementById(`toggle${i}`).click());
+    });
+
+    document.getElementById('pauseAll').addEventListener('click', () => {
+      tracks.forEach((t, i) => t.playing && document.getElementById(`toggle${i}`).click());
+    });
+
+    function updateVisualizer() {
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      tracks.forEach(t => t.gainNode.connect(analyser));
+
+      function draw() {
+        analyser.getByteFrequencyData(dataArray);
+        document.querySelectorAll('.bar').forEach((bar, i) => {
+          bar.style.height = `${dataArray[i] / 2}px`;
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+    updateVisualizer();
+
+    const themes = ['background1.png', 'background2.jpg', 'background3.png','background4.jpg'];
+    let currentTheme = 0;
+
+    document.getElementById('changeTheme').addEventListener('click', () => {
+      currentTheme = (currentTheme + 1) % themes.length;
+      document.body.style.backgroundImage = `url('${themes[currentTheme]}')`;
+    });
+  </script>
+</body>
+</html>
